@@ -1,0 +1,45 @@
+---
+title: "Linear Models and Generalized Linear Models in R, using `lm()` and `glm()`"
+output: html_notebook
+---
+
+First, we are going to discuss how to do a linear regression in R. We are going to focus on the use of linear regression to predict a quantitative response. For example, we might want to learn how to predict the median value of a home, our repsonse variable, based on several possible explanatory variables, such as property-tax, distance to employment centres, number of rooms, etc.
+
+### What can a linear model tell us?
+
+1. Is there a relationship between our response and explanatory variables?
+
+2. How strong is the relationship our response and explanatory variables? 
+
+3. Which explanatory variables contribute to our response variable?
+
+4. How accurately can we estimate the effect of each explanatory variable on the response variable?
+
+5. How accurately can we predict future outcomes
+
+6. Is the relationship linear?
+
+7. Is there synergy among the explanatory variables?
+
+### Explore the data
+
+```{r}
+library(MASS)
+help(Boston)
+str(Boston)
+```
+
+Let's start by exploring the relationship between the median value of a home (`medv`), our repsonse variable, and distance to employment centres (`dis`), an explanatory variable.
+
+```{r}
+library(ggplot2)
+qplot(y = medv, x = dis, data = Boston)
+```
+
+There looks as though there may be some relationship, so let's try and fit a model to assess this. 
+
+```{r}
+medv_vs_dis <- lm()
+
+```
+
