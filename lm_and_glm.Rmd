@@ -1,6 +1,9 @@
 ---
 title: "Linear Models and Generalized Linear Models in R, using `lm()` and `glm()`"
-output: html_notebook
+output:
+  html_notebook: default
+  html_document: default
+  pdf_document: default
 ---
 
 First, we are going to discuss how to do a linear regression in R. We are going to focus on the use of linear regression to predict a quantitative response. For example, we might want to learn how to predict the median value of a home, our repsonse variable, based on several possible explanatory variables, such as property-tax, distance to employment centres, number of rooms, etc.
@@ -94,12 +97,20 @@ ggplot(obs_stats, aes(x = dis, y = .resid)) + geom_point() + geom_hline(yinterce
 
 We can see that indeed, the variance is not the same for all values of the explanatory variable, distance to employment centre. Thus, we might want to be more cautious with interpreting the results of the model, use an alternative method for linerar regressison, such as robust regression, or transform the distance variable in a way such that the variance is more evenly distributed for all values of the explanatory variable.
 
+With the caveats in mind from our model diagnostics, let's take a look at the predicted values from the model:
+
+```{r}
+model_stats <- tidy(medv_vs_dis)
+qplot(y = medv, x = dis, data = Boston) + geom_abline(intercept = model_stats$estimate[1], slope = model_stats$estimate[2])
+```
+
+
 
 ### Challenge 1
 
 Work in pairs:
 
-1. Choose another explanatory variable from the Boston dataset and do a linear regression using `medv` as the response variable and the function `lm()`. 
+1. Choose another continuous explanatory variable from the Boston dataset and do a linear regression using `medv` as the response variable and the function `lm()`. 
 
 2. Evaluate how well the model fits the data be looking at model level statistics, assess whether a vanilla linear regression is sufficient for this analysis by looking at the distribution of the residuals and testing for homoscedasticity. 
 
@@ -146,6 +157,12 @@ You can see that when we include an interaction term, we also automatically incl
 
 Linear models are great if we have a continuous response variable that is roughly normally distributed, but what about cases where that is not the case? For example, what if the response is not linear at all, for example a categorical response variable coded as 0 or 1? Well in those cases it is best to use a generalized linear model instead of a linear model. Why? Well in this specific example, if we fit a linear model, it would make predictions outside of 0 and 1, and that really wouldn't make any sense with our data, now would it?
 
+Generalized linear models (GLMs) are a flexible generalization of linear regression which lets you analyze response variables that have an error distribution model that is something other than normal/gaussian. This is made possible by having the linear model incorporate a link and a variance function. The link function describes how the expected value of the response relates to the linear predictor of explanatory variables, while the variance function refers to the probability distribution of the response variable (Y).
+
+Here's a table listing some of the variance and link Families available to you in R:
+
+![source: http://data.princeton.edu/R/glms.html](var_link_funcs.png) 
+
 Let's quickly go through an example of this with the Titanic dataset, and let's start by looking at the titanic dataset:
 
 ```{r}
@@ -160,7 +177,7 @@ titanic_train$Survived <- as.factor(titanic_train$Survived)
 ggplot(titanic_train, aes(Survived, Fare)) + geom_boxplot()
 ```
 
-Hmm... so there may be a relationship, but it's hard to say for sure from the boxplot. Let's model this! When we fit a generalized linear model, we not only have to provide the data frame, reponse and explanatory variable(s), we also have to provide the family and the link function. Here we have a binomial response variable, and so that is how we choose the family, and 
+Hmm... so there may be a relationship, but it's hard to say for sure from the boxplot. Let's model this! When we fit a generalized linear model, we not only have to provide the data frame, reponse and explanatory variable(s), we also have to provide the family and the link function. Here we have a binomial response variable, and so that is how we choose the family, and a commonly used link function is the logit, so we'll use that.
 
 ```{r}
 survived_vs_fare <- glm(Survived ~ Fare, data = titanic_train, family=binomial(link = "logit"))
@@ -179,4 +196,8 @@ glance(survived_vs_fare)
 head(augment(survived_vs_fare))
 ```
 
+### Challenge 2
 
+Work in pairs:
+
+1. Choose at least one other explanatory variable from the Boston dataset and do a generalized linear regression using `Survived` as the response variable and the function `lm()`. Discuss the model outputs with your partner.
