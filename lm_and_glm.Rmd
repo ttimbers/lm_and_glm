@@ -36,10 +36,135 @@ library(ggplot2)
 qplot(y = medv, x = dis, data = Boston)
 ```
 
-There looks as though there may be some relationship, so let's try and fit a model to assess this. 
+### Fit a model
+
+There looks as though there may be some relationship, so let's try and fit a model to assess this:
 
 ```{r}
-medv_vs_dis <- lm()
+medv_vs_dis <- lm(medv ~ dis, data = Boston)
+```
+
+### Interpreting and working with model outputs
+
+To view the results of the model, tradionally we would use the `summary()` command:
+
+```{r}
+summary(medv_vs_dis)
+```
+
+Which is great, we can see all the results we want, but if we want to do anything with these results, it can be quite a bit of work. An alternative is to use the 3 functions in the `broom` package to get these results into a tidy data frame that is easy to work with. The first function we will look at is tidy, it gives us the model's statistical findings, such as the coefficients:
+
+```{r}
+library(broom)
+tidy(medv_vs_dis)
+```
+
+We can see that both the intercept and the slope of the line (the coefficient for distance to employment centre) is significant.
+
+The next function from the `broom` package that is very useful is `glance()`. This function always returns a one row data frame with model-level statistics (e.g., Adjusted R-squared, AIC, BIC).
+
+```{r}
+glance(medv_vs_dis)
+```
+
+We can see that even though we found that there is a significant relationship between median home value and distance to employment centre, the Adjusted R-squared indicates that our linear model does not explain much of the variation in the data. We may be missing some critical variables in our model, or that the relationship between median home value and distance to employment centre may not be linear.
+
+To further assess this, we can examine the distribution of the residuals. To access the residuals, we can use the `augment()` function from the `broom` package:
+
+```{r}
+obs_stats <- augment(medv_vs_dis)
+head(obs_stats)
+```
+
+*note - we wrapped augment in head so that we didn't print out all 506 rows of the dataframe*
+
+To look at the distribtion of the residuals, we'll use `ggplot`'s `geom_density()` function:
+
+```{r}
+ggplot(obs_stats, aes(.resid)) + geom_density()
+```
+
+Hmm... the distribution of the residuals looks almost normal, but has a weirdly shaped tail... Let's investigate the homoscedasticity to assess whether the variance around the regression line is the same for all values of the explanatory variable, distance to employment centre:
+
+```{r}
+ggplot(obs_stats, aes(x = dis, y = .resid)) + geom_point() + geom_hline(yintercept=0)
+
 
 ```
+
+We can see that indeed, the variance is not the same for all values of the explanatory variable, distance to employment centre. Thus, we might want to use an alternative method for linerar regressison, such as robust regression, or transform the distance variable in a way such that the variance is more evenly distributed for all values of the explanatory variable.
+
+### Fitting a model with multiple explanatory variables
+
+The Boston dataset we are working with has many different explanatory variables, and as such we can fit a model with multiple explanatory variables, and even mutliple interacting terms. Below is the syntax for fitting a model with multiple explanatory variables but no interacting terms:
+
+```{r}
+medv_vs_three_vars <- lm(medv ~ dis + lstat + ptratio + age, data = Boston)
+tidy(medv_vs_three_vars)
+```
+
+We can see that there is a significant relationship between median home value and three of the explanatory variables dis (distnance to employment centres), lstat (lower status of the population) and ptratio (pupil-teacher ratio by town), but not age (proportion of owner-occupied units built prior to 1940). 
+
+We also see that our Adjusted R-squared is much higher, indicating that this model explains much more of the variance in the data.
+
+```{r}
+glance(medv_vs_three_vars)
+```
+
+
+If we want to run the linear regression against all possible explanatory variables in the dataset, we would use `.` to represent "all":
+
+```{r}
+medv_vs_all <- lm(medv ~ ., data = Boston)
+tidy(medv_vs_all)
+```
+
+Now we see that there is a significant relationship between median home value and all explanatory variables except for indus (proportion of non-retail business acres per town) and age (proportion of owner-occupied units built prior to 1940).
+
+Finally, we might want to fit a model that has multiple interaction terms to indicate that we would like to model synergy between two explanatory variables. The syntax for this is as follows:
+
+```{r}
+medv_w_interaction <- lm(medv ~ dis + crim * lstat, data = Boston)
+tidy(medv_w_interaction)
+```
+
+You can see that when we include an interaction term, we also automatically include the individual explanatory variables within that interaction term. The model results here tell us that in addition to crim & lstat being significant on their own, they also have a combined effect.
+
+### Generalized linear models
+
+Linear models are great if we have a continuous response variable that is roughly normally distributed, but what about cases where that is not the case? For example, what if the response is not linear at all, for example a categorical response variable coded as 0 or 1? Well in those cases it is best to use a generalized linear model instead of a linear model. Why? Well in this specific example, if we fit a linear model, it would make predictions outside of 0 and 1, and that really wouldn't make any sense with our data, now would it?
+
+Let's quickly go through an example of this with the Titanic dataset, and let's start by looking at the titanic dataset:
+
+```{r}
+library(titanic)
+str(titanic_train)
+```
+
+Let's explore whether there is a relationship between surviving (response variable) and fare (how much you paid for your ticket). Let's look at a boxplot to explore this:
+
+```{r}
+titanic_train$Survived <- as.factor(titanic_train$Survived)
+ggplot(titanic_train, aes(Survived, Fare)) + geom_boxplot()
+```
+
+Hmm... so there may be a relationship, but it's hard to say for sure from the boxplot. Let's model this! When we fit a generalized linear model, we not only have to provide the data frame, reponse and explanatory variable(s), we also have to provide the family and the link function. Here we have a binomial response variable, and so that is how we choose the family, and 
+
+```{r}
+survived_vs_fare <- glm(Survived ~ Fare, data = titanic_train, family=binomial(link = "logit"))
+tidy(survived_vs_fare)
+```
+
+We can see from our model that there does appear to be a significant relationship between who survived and how much they paid for their fare. 
+
+You can also use `glance()` and `augment` with `glm`'s to get the model and observation statistics, respecively.
+
+```{r}
+glance(survived_vs_fare)
+```
+
+```{r}
+head(augment(survived_vs_fare))
+```
+
 
