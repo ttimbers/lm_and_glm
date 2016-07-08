@@ -92,7 +92,19 @@ ggplot(obs_stats, aes(x = dis, y = .resid)) + geom_point() + geom_hline(yinterce
 
 ```
 
-We can see that indeed, the variance is not the same for all values of the explanatory variable, distance to employment centre. Thus, we might want to use an alternative method for linerar regressison, such as robust regression, or transform the distance variable in a way such that the variance is more evenly distributed for all values of the explanatory variable.
+We can see that indeed, the variance is not the same for all values of the explanatory variable, distance to employment centre. Thus, we might want to be more cautious with interpreting the results of the model, use an alternative method for linerar regressison, such as robust regression, or transform the distance variable in a way such that the variance is more evenly distributed for all values of the explanatory variable.
+
+
+### Challenge 1
+
+Work in pairs:
+
+1. Choose another explanatory variable from the Boston dataset and do a linear regression using `medv` as the response variable and the function `lm()`. 
+
+2. Evaluate how well the model fits the data be looking at model level statistics, assess whether a vanilla linear regression is sufficient for this analysis by looking at the distribution of the residuals and testing for homoscedasticity. 
+
+3. Discuss with your partner the results of your model, and any caveats/changes you might have to make based on model diagnostics.
+
 
 ### Fitting a model with multiple explanatory variables
 
