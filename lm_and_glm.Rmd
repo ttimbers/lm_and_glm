@@ -201,3 +201,5 @@ head(augment(survived_vs_fare))
 Work in pairs:
 
 1. Choose at least one other explanatory variable from the Boston dataset and do a generalized linear regression using `Survived` as the response variable and the function `lm()`. Discuss the model outputs with your partner.
+
+2. Perform some model diagnostics for your model. Discuss whether or not they suggest you need to make any adjustments to your model.
